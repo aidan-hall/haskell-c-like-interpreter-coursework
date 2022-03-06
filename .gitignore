@@ -1,2 +1,4 @@
 .stack-work/
 *~
+/cswk-program.cabal
+/stack.yaml.lock
