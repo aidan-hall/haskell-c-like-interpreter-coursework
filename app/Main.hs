@@ -79,6 +79,18 @@ mySequence = do
 whitespace :: Parser ()
 whitespace = void $ some (space <|> void newline)
 
+sc :: Parser ()
+sc = L.space
+  space1
+  (L.skipLineComment "//")
+  (L.skipBlockComment "/*" "*/")
+
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme sc
+
+symbol :: Text -> Parser Text
+symbol = L.symbol sc
+
 pUri :: Parser Uri
 pUri = do
   uriScheme <- dbg "scheme" pScheme <?> "valid scheme"
