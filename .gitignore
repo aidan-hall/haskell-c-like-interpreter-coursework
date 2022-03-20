@@ -2,3 +2,5 @@
 *~
 /cswk-program.cabal
 /stack.yaml.lock
+*.tex
+*.pdf
