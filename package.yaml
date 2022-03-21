@@ -11,6 +11,7 @@ dependencies:
 - parser-combinators
 - text
 - text-conversions
+- containers
 
 library:
   source-dirs: src

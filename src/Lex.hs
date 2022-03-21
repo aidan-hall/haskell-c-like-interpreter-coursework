@@ -1,19 +1,16 @@
 module Lex where
 
-import Control.Monad
-import Control.Monad.Combinators.Expr
-import Data.Functor.Identity
 import Data.Text (Text)
-import Data.Text.Conversions
-import qualified Data.Text as T
-import Data.Void
-import Text.Read hiding (choice, parens)
-import Text.Megaparsec
-import Text.Megaparsec.Char
+import Data.Void ( Void )
+import Text.Megaparsec ( between, Parsec, ParsecT )
+import Text.Megaparsec.Char ( space1 )
 import qualified Text.Megaparsec.Char.Lexer as L
-import Text.Megaparsec.Debug
 
 import System.Environment
+
+import qualified Data.Map as Map
+import Data.Map (Map)
+
 
 type Parser = Parsec Void Text
 
