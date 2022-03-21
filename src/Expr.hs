@@ -1,4 +1,4 @@
-module Expr (Expr(..), Value(..), pExpr) where
+module Expr where
 
 import Control.Monad
 import Control.Monad.Combinators.Expr
@@ -13,7 +13,7 @@ import qualified Text.Megaparsec.Char.Lexer as L
 import Text.Megaparsec.Debug
 
 
-import Lex
+import Lex ( Parser, lexeme, symbol, parens )
 
 data Value
   = Integer Int
@@ -29,6 +29,15 @@ data Expr
   | Product Expr Expr
   | Division Expr Expr
   | Modulo Expr Expr
+  | Not Expr
+  | And Expr Expr
+  | Or Expr Expr
+  | Equal Expr Expr
+  | NotEqual Expr Expr
+  | Less Expr Expr
+  | Greater Expr Expr
+  | LessEqual Expr Expr
+  | GreaterEqual Expr Expr
   deriving (Eq, Ord, Show)
 
 -- | Parses integers in hexadecimal, octal or decimal format, based on a prefix.
@@ -71,7 +80,8 @@ pExpr = makeExprParser pTerm operatorTable
 operatorTable :: [[Operator Parser Expr]]
 operatorTable =
   [ [ prefix "-" Negation,
-      prefix "+" id
+      prefix "+" id,
+      prefix "!" Not
     ],
     [ binary "*" Product,
       binary "/" Division,
@@ -79,6 +89,18 @@ operatorTable =
     ],
     [ binary "+" Sum,
       binary "-" Subtr
+    ],
+    [ binary "<=" LessEqual,
+      binary ">=" GreaterEqual,
+      binary "<" Less,
+      binary ">" Greater
+    ],
+    [ binary "==" Equal,
+      binary "!=" NotEqual
+    ],
+    [ binary "&&" And
+    ],
+    [ binary "||" Or
     ]
   ]
 

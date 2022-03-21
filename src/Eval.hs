@@ -2,7 +2,17 @@
 
 module Eval where
 
-import Expr ( Value(..), Expr(..) )
+import Expr ( Value(..), Expr(..))
+
+truth :: Value -> Bool
+truth (Integer x) = x /= 0
+truth (Float y) = y /= 0.0
+
+-- Isn't it funny that this classic C pattern came up?
+boolVal :: Bool -> Value
+boolVal False = Integer 0
+boolVal True = Integer 1
+
 
 eval :: Expr -> Value
 eval = \case
@@ -40,3 +50,44 @@ eval = \case
     case (eval x, eval y) of
       (Integer x', Integer y') -> Integer $ x' `mod` y'
       (_, _) -> error "Modulo must be between two integers."
+
+  Not x -> boolVal (not . truth $ eval x)
+  And x y -> boolVal $ truth (eval x) && truth (eval y)
+  Or x y -> boolVal $ truth (eval x) || truth (eval y)
+
+  Equal x y ->
+    case (eval x, eval y) of
+      (Integer x', Integer y') -> boolVal $ x == y
+      (Float x', Integer y') -> boolVal $ x == y
+      (Integer x', Float y') -> boolVal $ x == y
+      (Float x', Float y') -> boolVal $ x == y
+  NotEqual x y ->
+    case (eval x, eval y) of
+      (Integer x', Integer y') -> boolVal $ x /= y
+      (Float x', Integer y') -> boolVal $ x /= y
+      (Integer x', Float y') -> boolVal $ x /= y
+      (Float x', Float y') -> boolVal $ x /= y
+  Greater x y ->
+    case (eval x, eval y) of
+      (Integer x', Integer y') -> boolVal $ x > y
+      (Float x', Integer y') -> boolVal $ x > y
+      (Integer x', Float y') -> boolVal $ x > y
+      (Float x', Float y') -> boolVal $ x > y
+  Less x y ->
+    case (eval x, eval y) of
+      (Integer x', Integer y') -> boolVal $ x < y
+      (Float x', Integer y') -> boolVal $ x < y
+      (Integer x', Float y') -> boolVal $ x < y
+      (Float x', Float y') -> boolVal $ x < y
+  GreaterEqual x y ->
+    case (eval x, eval y) of
+      (Integer x', Integer y') -> boolVal $ x >= y
+      (Float x', Integer y') -> boolVal $ x >= y
+      (Integer x', Float y') -> boolVal $ x >= y
+      (Float x', Float y') -> boolVal $ x >= y
+  LessEqual x y ->
+    case (eval x, eval y) of
+      (Integer x', Integer y') -> boolVal $ x <= y
+      (Float x', Integer y') -> boolVal $ x <= y
+      (Integer x', Float y') -> boolVal $ x <= y
+      (Float x', Float y') -> boolVal $ x <= y
