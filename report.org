@@ -1,133 +1,10 @@
-* Technology & Resources
-- [[https://github.com/mrkkrp/megaparsec][Megaparsec]], a monadic parsing library.
-- [[https://markkarpov.com/tutorial/megaparsec.html][Megaparsec Tutorial]].
-- [[https://mmhaskell.com/parsing/megaparsec][Monday Morning Haskell post]].
-* Final Lecture Ideas
-- ~playIO~ for gloss.
-- ~State~ and ~StateT~: simplify stateful computations.
-* Project Ideas
-** An esoteric programming language?
-Criteria:
-- Funny
-- Turing-complete?
-- Justifiable to use *Parsec: Some amount of structure will be
-  advisable.
-- Possibly something to do with stacks
-- Unicode
-** Zork Command Interpreter
-- Probably out of scope for 141.
-** Basic-Like Language Interpreter
-- Saves the mental overhead of designing a language.
-- Recognisable product.
-- https://en.wikipedia.org/wiki/BASIC#Syntax
-- Macros: Simple features → Structure?
-- One statement per line (easy parsing).
-- Use an array/vector for lines: Faster indexed access.
-- If/while/for/do loops: Stacks to track depth.
-- Loop start line: Push address to stack.
-- ~continue~: Pop
-- MegaParsec application: Read strings; convert to symbolic form.
-- Mini C (Compiler Design).
-** BF Interpreter
-- Very straightforward.
-- You have your own implementation as a reference?
-- Focus on style rather than panic.
-** Forth
-- A ready-made syntax very much like what you had in mind!
-- Word-by-word operation:
-  - Join whole program input into one ~String~, then use ~words~?
-  - Might be more flexible to use Megaparsec for this stuff.
-- Forth is a “real” language, so yours can just steal some of its
-  ideas, rather than being an implementation of any subset of it.
-- No formal grammar: This was the big issue with using a parsing
-  library for it: Overkill?!
-*** Useful Notions
-- Compilation and Interpretation Semantics.
-- Macros.
-*** Parser Syntax
-Word definition:
-#+begin_example
-: name [words...] ;
-#+end_example
-
-Interpretation:
-#+begin_example
-word
-#+end_example
-** Conclusion
+#+latex_header: \usepackage[margin=2cm]{geometry}
+#+options: toc:nil
+* Introduction
 After consideration, I will try to implement a parser and interpreter
 for a simple C-style language. This will be decently easy to parse,
 but will present more complexity than something like Lisp[fn:1] or Forth.
-* Funny Stack Language Design
-   :PROPERTIES:
-   :CUSTOM_ID: language-design
-   :END:
-This section is useless but I don't have the heart to remove it.
-- Don't try to make Haskell!
-- Inspired by ~dc~?
-- Everything is a stack.
-- (‘Forward’ or Reverse) Polish notation?
-- Function calls and data in the same stack.
-- Start as an extension of RPN, and work up.
-- Stack can have numbers, strings and functions.
-- Functions 
-- Everything is based on composition of primitives:
-  - ~add~, ~multiply~, ~divide~, ~subtract~
-  - ~define~: Pop values, and push them into a named stack.
-  - ~push~: Can be applied to functions, allowing wacky stuff.
-- Conditionals: "Eval if X > 0?"
-- Problem: Needs to be interesting to evaluate with Megaparsec.
-- Big problem: Needs to be a good project for 2 weeks.
 
-| Symbol  | Meaning                                           |
-|---------+---------------------------------------------------|
-| .       | Terminate: Marks the end of input for a function. |
-| @       | Evaluate: Pop a string, and copy from that stack. |
-| +,-,*,/ | Maths functions.                                  |
-| :       | Define (copy into that stack)                     |
-| ~       | Swap the top two elements on the stack.           |
-| ?       | If top value is zero, pop the second one as well. |
-| >       | Read a number as input; push it to data stack.    |
-** Stacks
-- Input Stack :: All input symbols are placed on here.  The contents
-  are evaluated when the evaluate symbol (@) is reached.
-- Data Stack :: Classic RPN stack.
-- Named Stacks :: Symbols can be copied in and out of these to create
-  macros. E.g. double: ~2 *~.
-** Examples
-*** Maths
-1 + 2 - 3
-#+begin_src
-  . 3 . 2 1 + @ - @
-  . 3 . 2 1 + @ (-)
-  . 3 . 2 1 0 (+ -)
-  . 3 . 2 1 (+ -)
-  . 3 . 3 (+ -)
-  . 3 3 (-)
-  0
-#+end_src
-Making character substitutions so (R)PN is more apparent makes it
-obvious that I'm not doing anything particularly innovative.
-#+begin_src
-  ( 3 ( 2 1 + ) - )
-  ( 3 ( 2 1 + ) (-)
-  ( 3 ( 2 1 (+ -)
-  ( 3 ( 2 1 (+ -)
-  ( 3 ( 3 (+ -)
-  ( 3 3 (-)
-  0
-#+end_src
-
-#+begin_src
-  . 2 1 + 3 - @
-#+end_src
-
-*** Fibonacci
-#+begin_example
-push 
-#+end_example
-
-* C-Like Language
 I will use the BNF grammar file used in the [[https://warwick.ac.uk/fac/sci/dcs/teaching/material/cs325/][CS325]] coursework, which
 describes the syntax of a language called ‘Mini-C’, as a basis for my
 syntax.  It will be interesting to see if Haskell will allow me to do
@@ -137,6 +14,17 @@ Necessary simplifications may include all variables being integers.
 
 ** Maths Expressions
 
+#+latex_export: \pagebreak
+* Technology & Resources
+These are resources I may have used for this coursework.
+- [[https://github.com/mrkkrp/megaparsec][Megaparsec]], a monadic parsing library.
+- [[https://markkarpov.com/tutorial/megaparsec.html][Megaparsec Tutorial]].
+- This [[https://mmhaskell.com/parsing/megaparsec][Monday Morning Haskell post]].
+- [[https://www.itu.dk/people/sestoft/plc/][Programming Language Concepts]], by Peter Sestoft.
+- [[https://suif.stanford.edu/dragonbook/][Compilers: Principles, Techniques, and Tools]], by Aho et al.
+- [[https://craftinginterpreters.com/][Crafting Interpreters]], by Robert Nystrom.
+- [[http://learnyouahaskell.com/chapters][Learn You a Haskell for Great Good!]], by Miran Lipovača.
+- Yorkshire Tea (the most important one).
 * Footnotes
 [fn:2] Probably not.
 
