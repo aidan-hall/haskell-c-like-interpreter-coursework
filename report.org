@@ -1,20 +1,30 @@
-#+latex_header: \usepackage[margin=2cm]{geometry}
 #+options: toc:nil
 * Introduction
 After consideration, I will try to implement a parser and interpreter
-for a simple C-style language. This will be decently easy to parse,
-but will present more complexity than something like Lisp[fn:1] or Forth.
+for a simple C-style language using ~megaparsec~. This will be
+decently easy to parse, but will present more complexity than
+something like Lisp[fn:1] or Forth.
 
 I will use the BNF grammar file used in the [[https://warwick.ac.uk/fac/sci/dcs/teaching/material/cs325/][CS325]] coursework, which
 describes the syntax of a language called ‘Mini-C’, as a basis for my
 syntax.  It will be interesting to see if Haskell will allow me to do
 in 3 days what would take a third-year 3 months with C[fn:2].
 
-Necessary simplifications may include all variables being integers.
+Necessary simplifications may include all variables being
+integers/numbers.
 
-** Maths Expressions
+* Maths Expressions
+I created an MVP mathematical expression parser and evaluator.
+Even this appears to technically meet the requirements for 40%.
 
-#+latex_export: \pagebreak
+At this point, I encountered slow-down in compile time due to all my
+code being in ~Main.hs~. I mitigated this by splitting the project
+into many files, like a C programmer in the '70s[fn:3].
+
+It was straightforward to add Boolean expressions by using the
+convention that zero means false, and non-zero means true.
+
+#+latex: \pagebreak
 * Technology & Resources
 These are resources I may have used for this coursework.
 - [[https://github.com/mrkkrp/megaparsec][Megaparsec]], a monadic parsing library.
@@ -26,6 +36,8 @@ These are resources I may have used for this coursework.
 - [[http://learnyouahaskell.com/chapters][Learn You a Haskell for Great Good!]], by Miran Lipovača.
 - Yorkshire Tea (the most important one).
 * Footnotes
+
+[fn:3] I love GHC. I love GHC. I love GHC. I love GHC. I love GHC.
 [fn:2] Probably not.
 
 [fn:1] Though it saddens my inner lisper.
