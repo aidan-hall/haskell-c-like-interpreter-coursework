@@ -135,6 +135,8 @@ in 3 days what would take a third-year 3 months with C[fn:2].
 
 Necessary simplifications may include all variables being integers.
 
+** Maths Expressions
+
 * Footnotes
 [fn:2] Probably not.
 
