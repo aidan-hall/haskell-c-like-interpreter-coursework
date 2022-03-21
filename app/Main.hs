@@ -6,19 +6,30 @@ import Control.Monad
 import Control.Monad.Combinators.Expr
 import Data.Functor.Identity
 import Data.Text (Text)
+import Data.Text.Conversions
 import qualified Data.Text as T
 import Data.Void
 import Lib
+import Text.Read hiding (choice, parens)
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 import Text.Megaparsec.Debug
 
+import System.Environment
+
 type Parser = Parsec Void Text
 
 {- This is the main entry point to your program. -}
 main :: IO ()
-main = someFunc
+main = do
+  putStrLn "File to evaluate:"
+  name <- getLine
+  putStrLn name
+  source <- convertText <$> readFile name
+  case parse (pExpr <* eof) name source of
+    Left err -> print err
+    Right exp -> print $ eval exp
 
 mySequence :: Parser (String, String)
 mySequence = do
