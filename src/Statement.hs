@@ -16,26 +16,28 @@ import Lex
 import Value
 import Expr
 
-data Statement
-  = Expr Expr
-  | Assign
+data Assignment = Assignment
     { name :: String
     , value :: Expr
     }
+  deriving (Show, Eq)
+
+data Statement
+  = Expr Expr
+  | Assign Assignment
   | Block [Statement]
   deriving (Show, Eq)
 
-pAssign :: Parser Statement
+pAssign :: Parser Assignment
 pAssign = do
   name <- pIdentifier
   lexeme $ char '='
   value <- pExpr
-  pure Assign {..}
+  pure Assignment {..}
   
-
 
 pStatement :: Parser Statement
 pStatement =
   Block <$> braces (many pStatement)
-  <|> try (pAssign <* semicolon)
+  <|> try (Assign <$> (pAssign <* semicolon))
   <|> Expr <$> pExpr <* semicolon
