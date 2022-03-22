@@ -15,12 +15,7 @@ import Text.Megaparsec.Debug
 import Lex
 import Value
 import Expr
-
-data Assignment = Assignment
-    { name :: String
-    , value :: Expr
-    }
-  deriving (Show, Eq)
+import Assign
 
 data Statement
   = Expr Expr

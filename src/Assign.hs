@@ -3,10 +3,15 @@ module Assign where
 
 import qualified Data.Map as Map
 import Data.Map (Map)
-import Value
-import Eval
+import Value ( SymbolTable )
+import Eval ( eval )
+import Expr ( Expr )
 
-import Statement
+data Assignment = Assignment
+    { name :: String
+    , value :: Expr
+    }
+  deriving (Show, Eq)
 
 assign :: SymbolTable -> Assignment -> SymbolTable
 assign tbl Assignment{..} =
