@@ -47,6 +47,7 @@ Interpretation:
 #+begin_example
 word
 #+end_example
+
 * Funny Stack Language Design
    :PROPERTIES:
    :CUSTOM_ID: language-design
@@ -115,3 +116,7 @@ obvious that I'm not doing anything particularly innovative.
 #+begin_example
 push 
 #+end_example
+
+* Relevant Working Notes
+- Having a ~ParsecT~ stacked on top of a ~Map~ for variable values
+  might be a nice idea.
