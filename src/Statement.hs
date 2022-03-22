@@ -15,7 +15,6 @@ import Text.Megaparsec.Debug
 import Lex
 import Value
 import Expr
-import Assign
 
 data Statement
   = Expr Expr

@@ -3,6 +3,7 @@ module Main where
 import Eval
 import Expr
 import Exec
+import SymbolTable
 import Statement
 import Text.Read
 import Text.Megaparsec
@@ -27,4 +28,4 @@ main = do
   source <- convertText <$> readFile name
   case parse (many pStatement <* eof) name source of
     Left err -> print err
-    Right exp -> void $ runStateT (execList exp) (Map.fromList [])
+    Right exp -> void $ runStateT (execList exp) SymbolTable { symbols = [] } -- No global scope.

@@ -4,6 +4,7 @@ module Eval where
 
 import Expr (Expr (..))
 import Value
+import SymbolTable
 
 import qualified Data.Map as Map
 
@@ -22,8 +23,8 @@ eval tbl =
   let eval' = eval tbl
    in \case
         Value v -> v
-        Variable name -> case Map.lookup name tbl of
-          Nothing -> error "Variable not found."
+        Variable name -> case findSymbol name tbl of
+          Nothing -> error $ "Variable not found: " ++ show name
           Just v -> v
         Call _ _ -> undefined
         Negation x ->
@@ -63,37 +64,37 @@ eval tbl =
         Or x y -> boolVal $ truth (eval' x) || truth (eval' y)
         Equal x y ->
           case (eval' x, eval' y) of
-            (Integer x', Integer y') -> boolVal $ x == y
-            (Float x', Integer y') -> boolVal $ x == y
-            (Integer x', Float y') -> boolVal $ x == y
-            (Float x', Float y') -> boolVal $ x == y
+            (Integer x', Integer y') -> boolVal $ x' == y'
+            (Float x', Integer y') -> boolVal $ x' == fromIntegral y'
+            (Integer x', Float y') -> boolVal $ fromIntegral x' == y'
+            (Float x', Float y') -> boolVal $ x' == y'
         NotEqual x y ->
           case (eval' x, eval' y) of
-            (Integer x', Integer y') -> boolVal $ x /= y
-            (Float x', Integer y') -> boolVal $ x /= y
-            (Integer x', Float y') -> boolVal $ x /= y
-            (Float x', Float y') -> boolVal $ x /= y
+            (Integer x', Integer y') -> boolVal $ x' /= y'
+            (Float x', Integer y') -> boolVal $ x' /= fromIntegral y'
+            (Integer x', Float y') -> boolVal $ fromIntegral x' /= y'
+            (Float x', Float y') -> boolVal $ x' /= y'
         Greater x y ->
           case (eval' x, eval' y) of
-            (Integer x', Integer y') -> boolVal $ x > y
-            (Float x', Integer y') -> boolVal $ x > y
-            (Integer x', Float y') -> boolVal $ x > y
-            (Float x', Float y') -> boolVal $ x > y
+            (Integer x', Integer y') -> boolVal $ x' > y'
+            (Float x', Integer y') -> boolVal $ x' > fromIntegral y'
+            (Integer x', Float y') -> boolVal $ fromIntegral x' > y'
+            (Float x', Float y') -> boolVal $ x' > y'
         Less x y ->
           case (eval' x, eval' y) of
-            (Integer x', Integer y') -> boolVal $ x < y
-            (Float x', Integer y') -> boolVal $ x < y
-            (Integer x', Float y') -> boolVal $ x < y
-            (Float x', Float y') -> boolVal $ x < y
+            (Integer x', Integer y') -> boolVal $ x' < y'
+            (Float x', Integer y') -> boolVal $ x' < fromIntegral y'
+            (Integer x', Float y') -> boolVal $ fromIntegral x' < y'
+            (Float x', Float y') -> boolVal $ x' < y'
         GreaterEqual x y ->
           case (eval' x, eval' y) of
-            (Integer x', Integer y') -> boolVal $ x >= y
-            (Float x', Integer y') -> boolVal $ x >= y
-            (Integer x', Float y') -> boolVal $ x >= y
-            (Float x', Float y') -> boolVal $ x >= y
+            (Integer x', Integer y') -> boolVal $ x' >= y'
+            (Float x', Integer y') -> boolVal $ x' >= fromIntegral y'
+            (Integer x', Float y') -> boolVal $ fromIntegral x' >= y'
+            (Float x', Float y') -> boolVal $ x' >= y'
         LessEqual x y ->
           case (eval' x, eval' y) of
-            (Integer x', Integer y') -> boolVal $ x <= y
-            (Float x', Integer y') -> boolVal $ x <= y
-            (Integer x', Float y') -> boolVal $ x <= y
-            (Float x', Float y') -> boolVal $ x <= y
+            (Integer x', Integer y') -> boolVal $ x' <= y'
+            (Float x', Integer y') -> boolVal $ x' <= fromIntegral y'
+            (Integer x', Float y') -> boolVal $ fromIntegral x' <= y'
+            (Float x', Float y') -> boolVal $ x' <= y'
