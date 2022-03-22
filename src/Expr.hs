@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 module Expr where
 
 import Control.Monad
@@ -6,18 +7,18 @@ import Data.Functor.Identity
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void
-import Text.Read hiding (choice, parens)
+import Lex
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 import Text.Megaparsec.Debug
-import Lex
+import Text.Read hiding (choice, parens)
 import Value
 
 data Expr
   = Value Value
-  | Variable { name :: String }
-  | Call { name :: String, args :: [Expr] }
+  | Variable {name :: String}
+  | Call {name :: String, args :: [Expr]}
   | Negation Expr
   | Sum Expr Expr
   | Subtr Expr Expr
@@ -34,8 +35,6 @@ data Expr
   | LessEqual Expr Expr
   | GreaterEqual Expr Expr
   deriving (Eq, Ord, Show)
-
-
 
 -- | Parses integers in hexadecimal, octal or decimal format, based on a prefix.
 pInteger :: Parser Value
@@ -57,16 +56,28 @@ pNumber =
     floating = Float <$> lexeme L.float
     integer = pInteger
 
+pIdentifier :: Parser String
+pIdentifier =
+  lexeme
+    ((:) <$> letterChar <*> many alphaNumChar <?> "variable")
+
 pVariable :: Parser Expr
-pVariable =
-  Variable
-    <$> lexeme
-      ((:) <$> letterChar <*> many alphaNumChar <?> "variable")
+pVariable = Variable <$> pIdentifier
+
+pArgs :: Parser [Expr]
+pArgs = sepBy pExpr comma
+
+pCall :: Parser Expr
+pCall = do
+  name <- pIdentifier
+  args <- parens pArgs
+  pure Call {..}
 
 pTerm :: Parser Expr
 pTerm =
   choice
     [ parens pExpr,
+      try pCall,
       pVariable,
       Value <$> pNumber
     ]
