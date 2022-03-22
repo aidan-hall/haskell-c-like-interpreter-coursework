@@ -17,18 +17,24 @@ integers/numbers.
 For this to be an imperative language, it needs sequence, selection
 and iteration. 
 
+* Running
+When run with ~stack run~, the user is prompted for the name of a file
+to interpret. Several ~.txt~ files have been provided as examples.
+
 * Maths Expressions
 I created an MVP mathematical expression parser and evaluator.
 Even this appears to technically meet the requirements for 40%.
 
 At this point, I encountered slow-down in compile time due to all my
 code being in ~Main.hs~. I mitigated this by splitting the project
-into many files, like a C programmer in the '70s[fn:3].
+into many files, like a C programmer in the ‘70s[fn:3].
 
 It was straightforward to add Boolean expressions by using the
 convention that zero means false, and non-zero means true.
 
 The relevant files are ~Lex.hs~, ~Value.hs~, ~Expr.hs~ and ~Eval.hs~.
+
+See ~maths.txt~ for an example program using maths expressions.
 
 * Variables, Assignment and Sequence
 Variables were surprisingly easy to add to the expression evaluator,
@@ -41,8 +47,27 @@ one affects the next, by mutating state. The most basic mutation is
 assignment. The obvious implementation for this is a ~State~
 transformer that evaluates a ‘statement’, which may be an assignment.
 
+There’s no sensible behaviour to continue execution if a variable is
+not found, so crashing with ~error~ seems reasonable, in addition to
+being much easier than wrapping everything in ~Maybe~.
+
 The relevant files are ~Value.hs~, ~Assign.hs~, ~Statement.hs~ and
 ~Exec.hs~.
+
+* Scoping
+I want variables to only exist within the {scope} where they are
+defined, since this allows programs to be more comprehensible.
+My approach for implementing this is to have a stack of symbol tables,
+with a new one added on top for each nested scope.
+
+Since there is no separation between declaration and assignment of
+variables, it is not possible to ‘shadow’ variables with the same name
+in an outer scope; I consider shadowing an anti-pattern anyway, so
+this doesn't bother me.
+
+
+See ~sequence.txt~ for a demonstration of sequential execution and
+variable scoping.
 
 * Functions
 I struggled to implement the ~pArgs~ parser until I discovered
