@@ -13,6 +13,6 @@ data Assignment = Assignment
     }
   deriving (Show, Eq)
 
-assign :: SymbolTable -> Assignment -> SymbolTable
-assign tbl Assignment{..} =
+assign :: Assignment -> SymbolTable -> SymbolTable
+assign Assignment{..} tbl =
   Map.insert name (eval tbl value) tbl
