@@ -83,6 +83,11 @@ Iteration is implemented with recursion.
 See ~branching.txt~ for an example.
 
 * Functions
+Rather than implementing an entirely separate section of the parser
+for function definitions, I have implemented them as lambdas, which
+are an option for the ~Value~ data type. This also means my language
+has first-class functions!
+
 I struggled to implement the ~pArgs~ parser until I discovered
 ~sepBy~, which just does what I want.
 
