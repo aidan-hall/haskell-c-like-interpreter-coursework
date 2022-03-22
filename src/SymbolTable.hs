@@ -2,12 +2,12 @@ module SymbolTable where
 
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Value
+import Types
 
 newtype SymbolTable = SymbolTable
   { symbols :: [Map String Value]
   }
-  deriving (Show, Eq)
+  deriving Show
 
 findSymbol :: String -> SymbolTable -> Maybe Value
 findSymbol name SymbolTable {symbols = (m : ms)} =

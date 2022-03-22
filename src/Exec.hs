@@ -3,10 +3,8 @@
 module Exec where
 
 import Eval
-import Expr (Expr (..))
-import Value
 import SymbolTable
-import Statement
+import Types
 
 import Control.Applicative
 import Control.Monad.Trans.State.Lazy
@@ -18,7 +16,7 @@ import qualified Data.Map as Map
 
 assign :: Assignment -> SymbolTable -> SymbolTable
 assign Assignment{..} tbl =
-  addSymbol name (eval tbl value) tbl
+  addSymbol key (eval tbl value) tbl
 
 exec :: Statement -> StateT SymbolTable IO ()
 exec statement =
@@ -26,7 +24,7 @@ exec statement =
     tbl <- get
     case statement of
       Block ss -> do
-          put SymbolTable { symbols = Map.fromList [] : symbols tbl} -- Deeper scope.
+          put SymbolTable { symbols = Map.empty : symbols tbl} -- Deeper scope.
           execList ss
           tbl' <- get                                         -- Mutated symbol table.
           put SymbolTable { symbols = drop 1 $ symbols tbl' } -- Leaving that scope.

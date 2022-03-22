@@ -7,7 +7,7 @@ import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 import Control.Monad (void)
 
-import Value
+import Types ( Parser )
   
 import System.Environment
 

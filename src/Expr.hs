@@ -1,40 +1,15 @@
 {-# LANGUAGE RecordWildCards #-}
 module Expr where
 
-import Control.Monad
 import Control.Monad.Combinators.Expr
-import Data.Functor.Identity
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Void
 import Lex
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
-import Text.Megaparsec.Debug
-import Text.Read hiding (choice, parens)
-import Value
 
-data Expr
-  = Value Value
-  | Variable {name :: String}
-  | Call {name :: String, args :: [Expr]}
-  | Negation Expr
-  | Sum Expr Expr
-  | Subtr Expr Expr
-  | Product Expr Expr
-  | Division Expr Expr
-  | Modulo Expr Expr
-  | Not Expr
-  | And Expr Expr
-  | Or Expr Expr
-  | Equal Expr Expr
-  | NotEqual Expr Expr
-  | Less Expr Expr
-  | Greater Expr Expr
-  | LessEqual Expr Expr
-  | GreaterEqual Expr Expr
-  deriving (Eq, Ord, Show)
+import Types ( Expr(..), Value(Float, Integer), Parser ) 
 
 -- | Parses integers in hexadecimal, octal or decimal format, based on a prefix.
 pInteger :: Parser Value
