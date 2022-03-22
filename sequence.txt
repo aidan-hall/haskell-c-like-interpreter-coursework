@@ -1,6 +1,15 @@
 {
-a = 2;
-b = 1 + a;
-b;
+  // Do some work 
+  a = 2;
+  b = 1 + a;
+  b;				// 3
+  {
+    c = b * 2;
+    c;				// 6
+    a == (c / 3);		// 1, true
+    a = c - a;
+  }
+  a;				// 4
+  b;				// 3
+  c;				// error because out of scope
 }
-
