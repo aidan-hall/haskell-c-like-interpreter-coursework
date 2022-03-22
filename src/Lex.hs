@@ -5,6 +5,7 @@ import Data.Text (Text)
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
+import Control.Monad (void)
 
 import Value
   
@@ -31,3 +32,9 @@ brackets = between (symbol "[") (symbol "]")
 
 braces :: Parser a -> Parser a
 braces = between (symbol "{") (symbol "}")
+
+semicolon :: Parser ()
+semicolon = void $ symbol ";"
+
+comma :: Parser ()
+comma = void $ symbol ","
