@@ -23,6 +23,12 @@ data Statement
   | Block [Statement]
   deriving (Show, Eq)
 
+data Assignment = Assignment
+    { name :: String
+    , value :: Expr
+    }
+  deriving (Show, Eq)
+
 pAssign :: Parser Assignment
 pAssign = do
   name <- pIdentifier
