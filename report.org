@@ -1,3 +1,4 @@
+#+latex_header: \usepackage[margin=2cm]{geometry}
 #+options: toc:nil
 * Introduction
 After consideration, I will try to implement a parser and interpreter
@@ -13,6 +14,9 @@ in 3 days what would take a third-year 3 months with C[fn:2].
 Necessary simplifications may include all variables being
 integers/numbers.
 
+For this to be an imperative language, it needs sequence, selection
+and iteration. 
+
 * Maths Expressions
 I created an MVP mathematical expression parser and evaluator.
 Even this appears to technically meet the requirements for 40%.
@@ -24,6 +28,20 @@ into many files, like a C programmer in the '70s[fn:3].
 It was straightforward to add Boolean expressions by using the
 convention that zero means false, and non-zero means true.
 
+* Variables, Assignment and Sequence
+Variables were surprisingly easy to add to the expression evaluator,
+after spending 3 hours deciding how to do it[fn:4].  Since they are
+used as ~String~ expressions that represent ~Values~, it seemed
+natural to implement a symbol table that applies that mapping.
+
+Having a sequence of instructions is only meaningful if the result of
+one affects the next, by mutating state. The most basic mutation is
+assignment. The obvious implementation for this is a ~State~
+transformer that evaluates a ‘statement’, which may be an assignment.
+
+I struggled to implement the ~pArgs~ parser until I discovered
+~sepBy~, which just does what I want.
+
 #+latex: \pagebreak
 * Technology & Resources
 These are resources I may have used for this coursework.
@@ -34,8 +52,10 @@ These are resources I may have used for this coursework.
 - [[https://suif.stanford.edu/dragonbook/][Compilers: Principles, Techniques, and Tools]], by Aho et al.
 - [[https://craftinginterpreters.com/][Crafting Interpreters]], by Robert Nystrom.
 - [[http://learnyouahaskell.com/chapters][Learn You a Haskell for Great Good!]], by Miran Lipovača.
+- [[https://hoogle.haskell.org/][Hoogle]].
 - Yorkshire Tea (the most important one).
 * Footnotes
+[fn:4] The definitive Haskell experience.
 
 [fn:3] I love GHC. I love GHC. I love GHC. I love GHC. I love GHC.
 [fn:2] Probably not.
