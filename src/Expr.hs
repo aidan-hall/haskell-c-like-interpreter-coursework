@@ -11,18 +11,13 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 import Text.Megaparsec.Debug
-
-
-import Lex ( Parser, lexeme, symbol, parens )
-
-data Value
-  = Integer Int
-  | Float Float
-  deriving (Eq, Ord, Show)
+import Lex
+import Value
 
 data Expr
   = Value Value
-  | Variable String
+  | Variable { name :: String }
+  | Call { name :: String, args :: [Expr] }
   | Negation Expr
   | Sum Expr Expr
   | Subtr Expr Expr
@@ -39,6 +34,8 @@ data Expr
   | LessEqual Expr Expr
   | GreaterEqual Expr Expr
   deriving (Eq, Ord, Show)
+
+
 
 -- | Parses integers in hexadecimal, octal or decimal format, based on a prefix.
 pInteger :: Parser Value

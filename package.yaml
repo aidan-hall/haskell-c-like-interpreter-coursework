@@ -12,6 +12,7 @@ dependencies:
 - text
 - text-conversions
 - containers
+- transformers
 
 library:
   source-dirs: src
