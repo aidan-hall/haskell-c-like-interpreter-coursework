@@ -28,6 +28,8 @@ into many files, like a C programmer in the '70s[fn:3].
 It was straightforward to add Boolean expressions by using the
 convention that zero means false, and non-zero means true.
 
+The relevant files are ~Lex.hs~, ~Value.hs~, ~Expr.hs~ and ~Eval.hs~.
+
 * Variables, Assignment and Sequence
 Variables were surprisingly easy to add to the expression evaluator,
 after spending 3 hours deciding how to do it[fn:4].  Since they are
@@ -39,8 +41,13 @@ one affects the next, by mutating state. The most basic mutation is
 assignment. The obvious implementation for this is a ~State~
 transformer that evaluates a ‘statement’, which may be an assignment.
 
+The relevant files are ~Value.hs~, ~Assign.hs~, ~Statement.hs~ and
+~Exec.hs~.
+
+* Functions
 I struggled to implement the ~pArgs~ parser until I discovered
 ~sepBy~, which just does what I want.
+
 
 #+latex: \pagebreak
 * Technology & Resources
