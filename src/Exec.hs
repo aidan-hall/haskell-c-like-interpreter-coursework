@@ -34,6 +34,21 @@ exec statement =
         modify (assign a)
       Expr e -> do
         liftIO $ print (eval tbl e)
+      If e s -> do
+        if truth $ eval tbl e
+          then exec s
+          else pure ()
+      IfElse e t f -> do
+        if truth $ eval tbl e
+          then exec t
+          else exec f
+      While e s -> do
+        if truth $ eval tbl e
+          then do
+          exec s
+          exec $ While e s
+          else pure ()
+      
 
 execList :: [Statement] -> StateT SymbolTable IO ()
 -- | TODO: Find a more sensible way to do nothing.
