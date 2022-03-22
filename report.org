@@ -14,8 +14,8 @@ in 3 days what would take a third-year 3 months with C[fn:2].
 Necessary simplifications may include all variables being
 integers/numbers.
 
-For this to be an imperative language, it needs sequence, selection
-and iteration. 
+For this to be an imperative language, it needs *sequence*,
+*selection* and *iteration*.
 
 * Running
 When run with ~stack run~, the user is prompted for the name of a file
@@ -45,7 +45,7 @@ natural to implement a symbol table that applies that mapping.
 Having a sequence of instructions is only meaningful if the result of
 one affects the next, by mutating state. The most basic mutation is
 assignment. The obvious implementation for this is a ~State~
-transformer that evaluates a ‘statement’, which may be an assignment.
+transformer that evaluates a ~Statement~, which may be an assignment.
 
 There’s no sensible behaviour to continue execution if a variable is
 not found, so crashing with ~error~ seems reasonable, in addition to
@@ -65,9 +65,22 @@ variables, it is not possible to ‘shadow’ variables with the same name
 in an outer scope; I consider shadowing an anti-pattern anyway, so
 this doesn't bother me.
 
+There is no ‘global scope’, so all variables must be defined within
+braces.
 
 See ~sequence.txt~ for a demonstration of sequential execution and
 variable scoping.
+
+* Selection & Iteration
+Selection (~if~) is performed by evaluating an expression, then
+executing the corresponding ~Statement~. This statement may be a
+{scoped} block, allowing multiple actions to be performed in one
+branch.  In an (~if~-~else~) structure, the alternative ~Statement~ is
+executed if the expression evaluates to false.
+
+Iteration is implemented with recursion.
+
+See ~branching.txt~ for an example.
 
 * Functions
 I struggled to implement the ~pArgs~ parser until I discovered
