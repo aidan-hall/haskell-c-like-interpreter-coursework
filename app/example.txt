@@ -1,7 +1,0 @@
-65 A : @
-97 a : @
-2 * double : @
-
-+ 3 double 1 @
-
-hello @ world @ < @
