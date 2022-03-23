@@ -32,9 +32,11 @@ pNumber =
     integer = pInteger
 
 pIdentifier :: Parser String
-pIdentifier =
-  lexeme
-    ((:) <$> letterChar <*> many alphaNumChar <?> "variable")
+pIdentifier = do
+  name <- lexeme ((:) <$> letterChar <*> many alphaNumChar <?> "identifier")
+  if (name :: String) `elem` ["if", "while", "else", "return"]
+    then fail $ "Reserved key-word: " ++ name -- No good way to continue parsing here.
+    else pure name
 
 pVariable :: Parser Expr
 pVariable = Variable <$> pIdentifier
@@ -58,7 +60,7 @@ pTerm =
     ]
 
 pExpr :: Parser Expr
-pExpr = makeExprParser pTerm operatorTable
+pExpr = makeExprParser pTerm operatorTable <?> "expression"
 
 operatorTable :: [[Operator Parser Expr]]
 operatorTable =
