@@ -14,25 +14,25 @@ import Types
 pAssign :: Parser Assignment
 pAssign = do
   key <- pIdentifier
-  lexeme $ char '='
+  symbol "="
   value <- pExpr
   pure Assignment {..}
   
 pIf :: Parser Statement
 pIf = do
-  void $ lexeme (string "if")
+  void $ symbol "if"
   cond <- lexeme $ parens pExpr
   If cond <$> pStatement
 
 pIfElse :: Parser Statement
 pIfElse = do
   If cond whenTrue <- pIf
-  void $ lexeme (string "else")
+  void $ symbol "else"
   IfElse cond whenTrue <$> pStatement
 
 pWhile :: Parser Statement
 pWhile = do
-  void $ lexeme (string "while")
+  void $ symbol "while"
   cond <- lexeme $ parens pExpr
   While cond <$> pStatement
 
