@@ -1,27 +1,24 @@
 module Types where
 
-
 import Data.Text (Text)
-import Data.Void ( Void )
-
-import Text.Megaparsec
-import Text.Megaparsec.Char
-
+import Data.Void (Void)
+import Text.Megaparsec (Parsec)
 
 type Parser = Parsec Void Text
 
 data Value
   = Integer Int
   | Float Float
-  deriving Show
+  deriving (Show)
 
 data Function = Function
-  { fName :: String -- Haskell is weird with identifier scoping; "function Name"
-  , params :: [String]
-  , body :: Statement
+  { fName :: String, -- So-called to avoid conflict with Expr; "function name"
+    params :: [String],
+    body :: Statement
   }
-  deriving Show
+  deriving (Show)
 
+-- Karpov derivative
 data Expr
   = Value Value
   | Variable {name :: String}
@@ -41,8 +38,7 @@ data Expr
   | Greater Expr Expr
   | LessEqual Expr Expr
   | GreaterEqual Expr Expr
-  deriving Show
-
+  deriving (Show)
 
 data Statement
   = Expr Expr
@@ -52,10 +48,13 @@ data Statement
   | If Expr Statement
   | While Expr Statement
   | Return Expr
-  deriving Show
+  deriving (Show)
+
+returnDefault :: Value
+returnDefault = Integer 0
 
 data Assignment = Assignment
-    { key :: String
-    , value :: Expr
-    }
-  deriving Show
+  { key :: String,
+    value :: Expr
+  }
+  deriving (Show)

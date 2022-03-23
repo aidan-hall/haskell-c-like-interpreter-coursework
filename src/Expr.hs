@@ -1,67 +1,76 @@
 {-# LANGUAGE RecordWildCards #-}
+
 module Expr where
 
 import Control.Monad.Combinators.Expr
+  ( Operator (InfixL, Postfix, Prefix),
+    makeExprParser,
+  )
 import Data.Text (Text)
-import qualified Data.Text as T
-import Lex
+import Lex (comma, lexeme, parens, symbol)
 import Text.Megaparsec
+  ( MonadParsec (try),
+    choice,
+    many,
+    sepBy,
+    (<?>),
+    (<|>),
+  )
 import Text.Megaparsec.Char
+  ( alphaNumChar,
+    char,
+    letterChar,
+    string,
+  )
 import qualified Text.Megaparsec.Char.Lexer as L
+import Types (Expr (..), Parser, Value (Float, Integer))
 
-import Types ( Expr(..), Value(Float, Integer), Parser ) 
-
--- | Parses integers in hexadecimal, octal or decimal format, based on a prefix.
-pInteger :: Parser Value
+pInteger :: Parser Int
 pInteger =
-  Integer
-    <$> lexeme
-      ( choice
-          [ string "0x" *> L.hexadecimal,
-            string "0o" *> L.octal,
-            L.decimal
-          ]
-          <?> "integer"
-      )
+  string "0x" *> L.hexadecimal
+    <|> string "0o" *> L.octal
+    <|> L.decimal
+    <?> "integer"
 
-pNumber :: Parser Value
+pNumber :: Parser Expr
 pNumber =
-  try floating <|> integer
+  Value <$> (try floating <|> integer)
   where
     floating = Float <$> lexeme L.float
-    integer = pInteger
+    integer = Integer <$> lexeme pInteger
 
+-- Karpov derivative
 pIdentifier :: Parser String
 pIdentifier = do
   name <- lexeme ((:) <$> letterChar <*> many (alphaNumChar <|> char '_') <?> "identifier")
-  if (name :: String) `elem` ["if", "while", "else", "return"]
+  if name `elem` ["if", "while", "else", "return"]
     then fail $ "Reserved key-word: " ++ name -- No good way to continue parsing here.
     else pure name
 
 pVariable :: Parser Expr
 pVariable = Variable <$> pIdentifier
 
-pArgs :: Parser [Expr]
-pArgs = sepBy pExpr comma
-
 pCall :: Parser Expr
 pCall = do
   name <- pIdentifier
-  args <- parens pArgs
+  args <- parens $ sepBy pExpr comma
   pure Call {..}
 
+-- Close Karpov derivative
 pTerm :: Parser Expr
 pTerm =
   choice
     [ parens pExpr,
-      try pCall,
+      try pCall, -- Functions and variables both start with pIdentifer
       pVariable,
-      Value <$> pNumber
+      pNumber
     ]
 
+-- Close Karpov derivative
 pExpr :: Parser Expr
 pExpr = makeExprParser pTerm operatorTable <?> "expression"
 
+-- Close Karpov derivative
 operatorTable :: [[Operator Parser Expr]]
 operatorTable =
   [ [ prefix "-" Negation,
@@ -89,9 +98,11 @@ operatorTable =
     ]
   ]
 
+-- As specified in Karpov's tutorial AND THE DOCUMENTATION FOR makeExprParser!
 binary :: Text -> (Expr -> Expr -> Expr) -> Operator Parser Expr
 binary name f = InfixL (f <$ symbol name)
 
+-- There are only so many ways to skin a cat.
 prefix, postfix :: Text -> (Expr -> Expr) -> Operator Parser Expr
 prefix name f = Prefix (f <$ symbol name)
 postfix name f = Postfix (f <$ symbol name)

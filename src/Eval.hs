@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, RecordWildCards #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Eval where
 
@@ -6,6 +6,8 @@ import Types
 import SymbolTable
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.State
+
+import Data.Maybe (fromMaybe)
 
 import Exec (exec)
 
@@ -43,9 +45,7 @@ eval expression = do
                 exec body
                 resTable <- get
                 put tbl -- Restore the old symbol table.
-                pure $ case findSymbol "return" resTable of
-                         Nothing -> Integer 0
-                         Just v -> v
+                pure $ fromMaybe returnDefault (findSymbol "return" resTable)
 
         Negation x ->
           do
