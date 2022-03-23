@@ -31,4 +31,4 @@ main = do
       in
         do
           (val, _) <- runStateT (eval (Call "main" [])) tbl
-          print val
+          putStrLn $ "Exited with value: " ++ show val
