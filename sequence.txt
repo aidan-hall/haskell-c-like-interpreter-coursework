@@ -1,4 +1,4 @@
-{
+main() {
   // Do some work 
   a = 2;
   b = 1 + a;
