@@ -33,7 +33,7 @@ pNumber =
 
 pIdentifier :: Parser String
 pIdentifier = do
-  name <- lexeme ((:) <$> letterChar <*> many alphaNumChar <?> "identifier")
+  name <- lexeme ((:) <$> letterChar <*> many (alphaNumChar <|> char '_') <?> "identifier")
   if (name :: String) `elem` ["if", "while", "else", "return"]
     then fail $ "Reserved key-word: " ++ name -- No good way to continue parsing here.
     else pure name
