@@ -11,7 +11,6 @@ import qualified Data.Map as Map
 truth :: Value -> Bool
 truth (Integer x) = x /= 0
 truth (Float y) = y /= 0.0
-truth (Lambda _ _) = error "Lambda cannot have truth value"
 
 -- Isn't it funny that this classic C pattern came up?
 boolVal :: Bool -> Value
@@ -31,35 +30,30 @@ eval tbl =
           case eval' x of
             Integer n -> Integer $ negate n
             Float n -> Float $ negate n
-            Lambda _ _ -> error "Cannot negate lambda."
         Sum x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> Integer $ x' + y'
             (Float x', Float y') -> Float $ x' + y'
             (Integer x', Float y') -> Float $ fromIntegral x' + y'
             (Float x', Integer y') -> Float $ x' + fromIntegral y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."
         Subtr x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> Integer $ x' - y'
             (Float x', Float y') -> Float $ x' - y'
             (Integer x', Float y') -> Float $ fromIntegral x' - y'
             (Float x', Integer y') -> Float $ x' - fromIntegral y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."
         Product x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> Integer $ x' * y'
             (Float x', Float y') -> Float $ x' * y'
             (Integer x', Float y') -> Float $ fromIntegral x' * y'
             (Float x', Integer y') -> Float $ x' * fromIntegral y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."
         Division x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> Integer $ x' `div` y'
             (Float x', Float y') -> Float $ x' / y'
             (Integer x', Float y') -> Float $ fromIntegral x' / y'
             (Float x', Integer y') -> Float $ x' / fromIntegral y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."
         Modulo x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> Integer $ x' `mod` y'
@@ -73,39 +67,33 @@ eval tbl =
             (Float x', Integer y') -> boolVal $ x' == fromIntegral y'
             (Integer x', Float y') -> boolVal $ fromIntegral x' == y'
             (Float x', Float y') -> boolVal $ x' == y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."
         NotEqual x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> boolVal $ x' /= y'
             (Float x', Integer y') -> boolVal $ x' /= fromIntegral y'
             (Integer x', Float y') -> boolVal $ fromIntegral x' /= y'
             (Float x', Float y') -> boolVal $ x' /= y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."
         Greater x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> boolVal $ x' > y'
             (Float x', Integer y') -> boolVal $ x' > fromIntegral y'
             (Integer x', Float y') -> boolVal $ fromIntegral x' > y'
             (Float x', Float y') -> boolVal $ x' > y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."
         Less x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> boolVal $ x' < y'
             (Float x', Integer y') -> boolVal $ x' < fromIntegral y'
             (Integer x', Float y') -> boolVal $ fromIntegral x' < y'
             (Float x', Float y') -> boolVal $ x' < y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."
         GreaterEqual x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> boolVal $ x' >= y'
             (Float x', Integer y') -> boolVal $ x' >= fromIntegral y'
             (Integer x', Float y') -> boolVal $ fromIntegral x' >= y'
             (Float x', Float y') -> boolVal $ x' >= y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."
         LessEqual x y ->
           case (eval' x, eval' y) of
             (Integer x', Integer y') -> boolVal $ x' <= y'
             (Float x', Integer y') -> boolVal $ x' <= fromIntegral y'
             (Integer x', Float y') -> boolVal $ fromIntegral x' <= y'
             (Float x', Float y') -> boolVal $ x' <= y'
-            (_, _) -> error "Invalid type combination. Probably a lambda."

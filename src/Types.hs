@@ -14,10 +14,6 @@ type Parser = Parsec Void Text
 data Value
   = Integer Int
   | Float Float
-  | Lambda
-    { params :: [String]
-    , body :: [Statement]
-    }
   deriving Show
 
 data Expr
