@@ -36,11 +36,21 @@ pWhile = do
   cond <- lexeme $ parens pExpr
   While cond <$> pStatement
 
+pReturn :: Parser Statement
+pReturn = do
+  void $ symbol "return"
+  e <- optional $ lexeme pExpr
+  semicolon
+  case e of
+    Nothing -> pure $ Return (Value $ Integer 0) -- return; implies return 0;
+    Just e' -> pure $ Return e'
+
 pStatement :: Parser Statement
 pStatement =
   Block <$> braces (many pStatement)
   <|> try pIfElse
   <|> pIf
   <|> pWhile
+  <|> pReturn
   <|> try (Assign <$> (pAssign <* semicolon))
   <|> Expr <$> pExpr <* semicolon

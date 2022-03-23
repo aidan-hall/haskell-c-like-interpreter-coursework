@@ -1,13 +1,17 @@
 module Main where
 
 import Exec
+import Eval
 import SymbolTable
 import Statement ( pStatement )
+import Function
+import Types
 import Text.Megaparsec
 import Data.Text.Conversions
 
 import Control.Monad (void)
 import Control.Monad.Trans.State.Lazy
+import Control.Monad.IO.Class
 
 import qualified Data.Map as Map
 
@@ -18,6 +22,13 @@ main = do
   name <- getLine
   putStrLn name
   source <- convertText <$> readFile name
-  case parse (many pStatement <* eof) name source of
+  case parse (many pFunction <* eof) name source of
     Left err -> print err
-    Right exp -> void $ runStateT (execList exp) SymbolTable { symbols = [] } -- No global scope.
+    Right exp ->
+      let
+        fTable = Map.fromList $ map (\f -> (fName f, f)) exp
+        tbl = SymbolTable { symbols = [], functions = fTable }
+      in
+        do
+          (val, _) <- runStateT (eval (Call "main" [])) tbl
+          print val

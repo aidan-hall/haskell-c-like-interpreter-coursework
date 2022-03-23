@@ -10,10 +10,16 @@ import Text.Megaparsec.Char
 
 type Parser = Parsec Void Text
 
-
 data Value
   = Integer Int
   | Float Float
+  deriving Show
+
+data Function = Function
+  { fName :: String -- Haskell is weird with identifier scoping; "function Name"
+  , params :: [String]
+  , body :: Statement
+  }
   deriving Show
 
 data Expr
@@ -45,6 +51,7 @@ data Statement
   | IfElse Expr Statement Statement
   | If Expr Statement
   | While Expr Statement
+  | Return Expr
   deriving Show
 
 data Assignment = Assignment

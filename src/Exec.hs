@@ -2,7 +2,7 @@
 
 module Exec where
 
-import Eval
+import {-# SOURCE #-} Eval ( truth, eval )
 import SymbolTable
 import Types
 
@@ -14,9 +14,11 @@ import Control.Monad.IO.Class
 
 import qualified Data.Map as Map
 
-assign :: Assignment -> SymbolTable -> SymbolTable
-assign Assignment{..} tbl =
-  addSymbol key (eval tbl value) tbl
+assign :: Assignment -> StateT SymbolTable IO ()
+assign Assignment{..} = do
+  res <- eval value
+  tbl <- get
+  put $ addSymbol key res tbl
 
 exec :: Statement -> StateT SymbolTable IO ()
 exec statement =
@@ -24,28 +26,39 @@ exec statement =
     tbl <- get
     case statement of
       Block ss -> do
-          put SymbolTable { symbols = Map.empty : symbols tbl} -- Deeper scope.
+          put $ SymbolTable (Map.empty : symbols tbl) (functions tbl) -- Deeper scope.
           execList ss
           tbl' <- get                                         -- Mutated symbol table.
-          put SymbolTable { symbols = drop 1 $ symbols tbl' } -- Leaving that scope.
-      Assign a -> do
-        modify (assign a)
+          put $ restored tbl'
+          where
+            dropped tbl = SymbolTable (drop 1 $ symbols tbl) (functions tbl)
+            restored tbl =
+              case findSymbol "return" tbl of -- Cascade the return value down.
+                Nothing -> dropped tbl
+                Just v -> addSymbol "return" v $ dropped tbl
+      Assign a -> assign a
       Expr e -> do
-        liftIO $ print (eval tbl e)
+        res <- eval e
+        liftIO $ print res
       If e s -> do
-        if truth $ eval tbl e
+        res <- eval e
+        if truth res
           then exec s
           else pure ()
       IfElse e t f -> do
-        if truth $ eval tbl e
+        res <- eval e
+        if truth res
           then exec t
           else exec f
       While e s -> do
-        if truth $ eval tbl e
+        res <- eval e
+        if truth res
           then do
           exec s
           exec $ While e s
           else pure ()
+      Return e -> do
+        assign Assignment { key = "return", value = e }
       
 
 execList :: [Statement] -> StateT SymbolTable IO ()
@@ -53,4 +66,7 @@ execList :: [Statement] -> StateT SymbolTable IO ()
 execList [] = pure ()
 execList (s:ss) = do
   exec s
-  execList ss
+  tbl <- get
+  case findSymbol "return" tbl of
+    Nothing -> execList ss
+    Just _ -> pure ()
