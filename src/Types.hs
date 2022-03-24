@@ -12,7 +12,8 @@ data Value
   deriving (Show)
 
 data Function = Function
-  { fName :: String, -- So-called to avoid conflict with Expr; "function name"
+  -- So-called to avoid conflict with Expr
+  { fName :: String,
     params :: [String],
     body :: Statement
   }
@@ -40,6 +41,7 @@ data Expr
   | GreaterEqual Expr Expr
   deriving (Show)
 
+-- Karpov derivative. See also: Any tutorial on parsing ever.
 data Statement
   = Expr Expr
   | Assign Assignment
@@ -50,6 +52,7 @@ data Statement
   | Return Expr
   deriving (Show)
 
+-- Implicit function return value if one is not given.
 returnDefault :: Value
 returnDefault = Integer 0
 
