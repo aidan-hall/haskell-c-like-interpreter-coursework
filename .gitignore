@@ -3,4 +3,4 @@
 /cswk-program.cabal
 /stack.yaml.lock
 *.tex
-*.pdf
+c2.pdf
