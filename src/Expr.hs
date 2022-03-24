@@ -98,7 +98,7 @@ operatorTable =
     ]
   ]
 
--- As specified in Karpov's tutorial AND THE DOCUMENTATION FOR makeExprParser!
+-- As stated in the tutorial documentation for the library.
 binary :: Text -> (Expr -> Expr -> Expr) -> Operator Parser Expr
 binary name f = InfixL (f <$ symbol name)
 
