@@ -1,46 +1,64 @@
 #+latex_header: \usepackage[margin=2cm]{geometry}
 #+options: toc:nil
-* Introduction
-After consideration, I will try to implement a parser and interpreter
-for a simple C-style language using ~megaparsec~. This will be
-decently easy to parse, but will present more complexity than
-something like Lisp[fn:1] or Forth.
+* C-Like Language Interpreter
+This program is an interpreter for a C-like imperative programming
+language with *sequence*, *selection*, *iteration* and *functions*.
+Several example programs have been provided as ~.txt~ files.
 
-I will use the BNF grammar file used in the [[https://warwick.ac.uk/fac/sci/dcs/teaching/material/cs325/][CS325]] coursework, which
-describes the syntax of a language called ‘Mini-C’, as a basis for my
-syntax.  It will be interesting to see if Haskell will allow me to do
-in 3 days what would take a third-year 3 months with C[fn:2].
+Variables may be integers or floating-point numbers, with most of the
+common mathematical and Boolean operators supported.  Explicit
+declarations and type specifiers do not exist. The language is
+technically dynamically typed.
 
-Necessary simplifications may include all variables being
-integers/numbers.
+The weirdest feature is that the result of a bare expression or
+function call that isn't assigned, returned or used in a loop is
+printed. See ~hello.txt~ for an example.
 
-For this to be an imperative language, it needs *sequence*,
-*selection* and *iteration*.
-
-* Running
+I have used the BNF grammar file from the [[https://warwick.ac.uk/fac/sci/dcs/teaching/material/cs325/][CS325]] coursework, which
+describes the syntax of a language called ‘Mini-C’, as inspiration for
+my syntax.
 When run with ~stack run~, the user is prompted for the name of a file
-to interpret. Several ~.txt~ files have been provided as examples.
+to interpret.
 
-* Maths Expressions
-I created an MVP mathematical expression parser and evaluator.
-Even this appears to technically meet the requirements for 40%.
+* Files
+The project source is split across many files.
+For ease of navigation, they contain:
+- ~Types.hs~ :: Most of the type declarations for the project.
+- ~Lex.hs~ :: Basic lexicographical parser functions, mostly copied
+  from Mark Karpov's tutorial.
+- ~Statement.hs~ :: Parsers for code statements. Function bodies are
+  parsed with ~pStatement~.
+- ~Main.hs~ :: The entry point of the program.
+- ~Eval.hs~ and ~Eval.hs-boot~ :: Functions for evaluating the AST of
+  an expression. Most notably ~eval~.
+- ~Exec.hs~ :: Functions for executing Statements and lists thereof.
+- ~SymbolTable.hs~ :: The symbol table data type,
+  and functions to query and update it.
+- ~Functions.hs~ ::
+- ~Expr.hs~ :: More code that draws substantial inspiration from Mark
+  Karpov.
+* Maths and Boolean Expressions
+I first created a mathematical expression parser and evaluator.
+Even it appeared to technically meet the requirements for 40%.
 
 At this point, I encountered slow-down in compile time due to all my
-code being in ~Main.hs~. I mitigated this by splitting the project
-into many files, like a C programmer in the ‘70s[fn:3].
+code being in ~Main.hs~. I tried to mitigate this by splitting the
+project into many files, but the benefit was limited since there are a
+few files that many others depend on.
 
 It was straightforward to add Boolean expressions by using the
 convention that zero means false, and non-zero means true.
+These are encoded in the ~truth~ and ~boolVal~ functions in ~Eval.hs~.
+All binary operators strictly evaluate both their operands every time.
 
-The relevant files are ~Lex.hs~, ~Value.hs~, ~Expr.hs~ and ~Eval.hs~.
-
-See ~maths.txt~ for an example program using maths expressions.
+See ~maths.txt~ for an example program using maths expressions and
+Boolean expressions.
 
 * Variables, Assignment and Sequence
 Variables were surprisingly easy to add to the expression evaluator,
-after spending 3 hours deciding how to do it[fn:4].  Since they are
-used as ~String~ expressions that represent ~Values~, it seemed
-natural to implement a symbol table that applies that mapping.
+after spending 3 hours deciding how to do it.  Since they are used as
+~String~ expressions that represent ~Values~, it seemed natural to
+implement a symbol table that applies that mapping.
 
 Having a sequence of instructions is only meaningful if the result of
 one affects the next, by mutating state. The most basic mutation is
@@ -50,9 +68,6 @@ transformer that evaluates a ~Statement~, which may be an assignment.
 There’s no sensible behaviour to continue execution if a variable is
 not found, so crashing with ~error~ seems reasonable, in addition to
 being much easier than wrapping everything in ~Maybe~.
-
-The relevant files are ~Value.hs~, ~Assign.hs~, ~Statement.hs~ and
-~Exec.hs~.
 
 * Scoping
 I want variables to only exist within the {scope} where they are
@@ -82,11 +97,40 @@ Iteration is implemented with recursion.
 
 See ~branching.txt~ for an example.
 
-* Functions
-Rather than implementing an entirely separate section of the parser
-for function definitions, I have implemented them as lambdas, which
-are an option for the ~Value~ data type. This also means my language
-has first-class functions!
+* Functions and ~return~
+I wanted to implement functions as lambdas, which would be ~Expr~
+expressions. This would have unfortunately involved a dependency
+cycle, where Expressions could contain Statements, which could contain
+Expressions, making it unreasonably difficult to implement into my
+existing architecture.
+
+Instead, I use the much more C-like form of the top level of a program
+file consisting of several function definitions, including ~main()~,
+which is used as the entry-point to start evaluation.
+I do this by evaluating an expression to call the ~main()~ function.
+
+Distressingly, the dependency cycle remained, and I had to use
+~Eval.hs-boot~ to break it. If I'd known how to do this from the
+start, I could have implemented lambdas and first-class functions,
+which would have been much cooler.
+
+As there is no global scope, and the language does not support
+references, each function (call) can have its own isolated symbol
+table for variables. These are stored in the familiar function call
+stack, which Haskell can implicitly create for me through recursion.
+
+Returning works by adding a value for the key “return” to the symbol
+table. Since ~pIdentifier~ prevents user-input assignments to this
+symbol from parsing, it will only be created once a ~return~ Statement
+has run.  The (function) interpreter may then simply evaluate the
+Statements in the body of a function in turn until the ~return~ symbol
+has a Value, then pass that Value out to the expression it was called
+in.  When a value is returned inside a {~Block~}, it is necessary to
+‘cascade’ it out to the symbol table below, as seen in ~Exec.hs~.
+
+An interesting consequence of using ~Map.fromList~ to construct the
+table of functions is that duplicate definitions are not considered a
+problem, and the most recent one is used. See ~duplicate.txt~.
 
 I struggled to implement the ~pArgs~ parser until I discovered
 ~sepBy~, which just does what I want.
@@ -96,18 +140,11 @@ I struggled to implement the ~pArgs~ parser until I discovered
 * Technology & Resources
 These are resources I may have used for this coursework.
 - [[https://github.com/mrkkrp/megaparsec][Megaparsec]], a monadic parsing library.
-- [[https://markkarpov.com/tutorial/megaparsec.html][Megaparsec Tutorial]].
-- This [[https://mmhaskell.com/parsing/megaparsec][Monday Morning Haskell post]].
+- [[https://markkarpov.com/tutorial/megaparsec.html][Megaparsec Tutorial]], by Mark Karpov.
 - [[https://www.itu.dk/people/sestoft/plc/][Programming Language Concepts]], by Peter Sestoft.
 - [[https://suif.stanford.edu/dragonbook/][Compilers: Principles, Techniques, and Tools]], by Aho et al.
 - [[https://craftinginterpreters.com/][Crafting Interpreters]], by Robert Nystrom.
 - [[http://learnyouahaskell.com/chapters][Learn You a Haskell for Great Good!]], by Miran Lipovača.
 - [[https://hoogle.haskell.org/][Hoogle]].
-- Yorkshire Tea (the most important one).
-* Footnotes
-[fn:4] The definitive Haskell experience.
-
-[fn:3] I love GHC. I love GHC. I love GHC. I love GHC. I love GHC.
-[fn:2] Probably not.
-
-[fn:1] Though it saddens my inner lisper.
+- [[https://warwick.ac.uk/fac/sci/dcs/teaching/material/cs325/][CS325]] coursework grammar file.
+- Yorkshire Tea.
