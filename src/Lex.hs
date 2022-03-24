@@ -1,13 +1,19 @@
 module Lex where
 
 import Data.Text (Text)
-
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
+import Types (Parser)
 
-import Types ( Parser )
+{-
+Ok so technically most of this is the same as the megaparsec tutorial,
+but how else am I supposed to implement these anyway?
 
+I don't think there would be much worth credit in this file
+even if I had come up with it myself.
+This is practically the same as the examples in the documentation!
+-}
 sc :: Parser ()
 sc =
   L.space
