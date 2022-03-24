@@ -1,9 +1,19 @@
 #+latex_header: \usepackage[margin=2cm]{geometry}
+#+latex_header: \usepackage{fancyhdr}
+#+latex_header: \pagestyle{fancy}
+#+latex_header: \fancyhf{}
+#+latex_header: \lhead{Aidan Hall}
+#+latex_header: \chead{CS141 Coursework 2}
+#+latex_header: \rhead{2106099}
+#+latex_header: \cfoot{\thepage}
 #+options: toc:nil
 * C-Like Language Interpreter
 This program is an interpreter for a C-like imperative programming
 language with *sequence*, *selection*, *iteration* and *functions*.
 Several example programs have been provided as ~.txt~ files.
+
+When run with ~stack run~, the user is prompted for the name of a file
+to interpret.
 
 Variables may be integers or floating-point numbers, with most of the
 common mathematical and Boolean operators supported.  Explicit
@@ -17,34 +27,47 @@ printed. See ~hello.txt~ for an example.
 I have used the BNF grammar file from the [[https://warwick.ac.uk/fac/sci/dcs/teaching/material/cs325/][CS325]] coursework, which
 describes the syntax of a language called ‘Mini-C’, as inspiration for
 my syntax.
-When run with ~stack run~, the user is prompted for the name of a file
-to interpret.
 
+There are only so many ways to skin a cat and Haskell reduces that
+number to one quite often. Some code here was lifted directly from
+Mark Karpov's tutorial, frankly for want of an alternative. Any
+instances of this have been noted.
+
+I have occasionally capitalised nouns corresponding to data types.
+E.g. This evaluates an Expression.
 * Files
-The project source is split across many files.
-For ease of navigation, they contain:
-- ~Types.hs~ :: Most of the type declarations for the project.
-- ~Lex.hs~ :: Basic lexicographical parser functions, mostly copied
-  from Mark Karpov's tutorial.
-- ~Statement.hs~ :: Parsers for code statements. Function bodies are
-  parsed with ~pStatement~.
-- ~Main.hs~ :: The entry point of the program.
-- ~Eval.hs~ and ~Eval.hs-boot~ :: Functions for evaluating the AST of
-  an expression. Most notably ~eval~.
-- ~Exec.hs~ :: Functions for executing Statements and lists thereof.
-- ~SymbolTable.hs~ :: The symbol table data type,
-  and functions to query and update it.
-- ~Functions.hs~ ::
-- ~Expr.hs~ :: More code that draws substantial inspiration from Mark
-  Karpov.
++--------------+----------------------------------------------------------------------------------+
+|File          |Description                                                                       |
++--------------+----------------------------------------------------------------------------------+
+|Types.hs      |Most of the type declarations for the project.                                    |
++--------------+----------------------------------------------------------------------------------+
+|SymbolTable.hs|The symbol table data type, and functions to query and update it.                 |
++--------------+----------------------------------------------------------------------------------+
+|Lex.hs        |Basic lexicographical parser functions, mostly copied from Mark Karpov's tutorial.|
++--------------+----------------------------------------------------------------------------------+
+|Statement.hs  |Parsers for code statements.                                                      |
++--------------+----------------------------------------------------------------------------------+
+|Function.hs   |The pFunction parser for functions.                                               |
++--------------+----------------------------------------------------------------------------------+
+|Expr.hs       |Parsers for expressions (mathematical and Boolean).  (A function call is also an  |
+|              |expression.)                                                                      |
++--------------+----------------------------------------------------------------------------------+
+|Eval.hs and   |Functions for evaluating the AST of an expression. Most notably eval.             |
+|Eval.hs-boot  |                                                                                  | 
++--------------+----------------------------------------------------------------------------------+
+|Exec.hs       |Functions for executing Statements and lists thereof.                             |
++--------------+----------------------------------------------------------------------------------+
+|Main.hs       |Where the function table is loaded and main() is called.                          |
++--------------+----------------------------------------------------------------------------------+
 * Maths and Boolean Expressions
 I first created a mathematical expression parser and evaluator.
 Even it appeared to technically meet the requirements for 40%.
 
 At this point, I encountered slow-down in compile time due to all my
 code being in ~Main.hs~. I tried to mitigate this by splitting the
-project into many files, but the benefit was limited since there are a
-few files that many others depend on.
+project into many files, but the benefit was limited since the files
+form a dependency tree, with every descendant needing to be recompiled
+if a file changes.
 
 It was straightforward to add Boolean expressions by using the
 convention that zero means false, and non-zero means true.
@@ -58,33 +81,31 @@ Boolean expressions.
 Variables were surprisingly easy to add to the expression evaluator,
 after spending 3 hours deciding how to do it.  Since they are used as
 ~String~ expressions that represent ~Values~, it seemed natural to
-implement a symbol table that applies that mapping.
+implement this with a ~Map~ (~Eval.hs~: ~Value~ case in ~eval~).
 
 Having a sequence of instructions is only meaningful if the result of
 one affects the next, by mutating state. The most basic mutation is
-assignment. The obvious implementation for this is a ~State~
-transformer that evaluates a ~Statement~, which may be an assignment.
+assignment, which is also needed for variables to be useful. The
+obvious implementation for this is a ~State~ transformer that
+evaluates a ~Statement~ (~Exec.hs~: ~exec~), such as an assignment.
 
 There’s no sensible behaviour to continue execution if a variable is
 not found, so crashing with ~error~ seems reasonable, in addition to
-being much easier than wrapping everything in ~Maybe~.
+being much easier than wrapping everything in ~Maybe~.  I could have
+alternatively implemented a complex chain of passed ~Either~ error
+values back up to ~main~, which could then display an error message
+and cancel execution.
 
 * Scoping
 I want variables to only exist within the {scope} where they are
 defined, since this allows programs to be more comprehensible.
-My approach for implementing this is to have a stack of symbol tables,
-with a new one added on top for each nested scope.
+My approach for implementing this is to have a stack of variable value
+maps, with a new one added on top for each nested scope.
 
-Since there is no separation between declaration and assignment of
-variables, it is not possible to ‘shadow’ variables with the same name
-in an outer scope; I consider shadowing an anti-pattern anyway, so
-this doesn't bother me.
-
+Variable names cannot be ‘shadowed’, due to the lack of explicit
+declarations; I consider the practice harmful, so I am indifferent.
 There is no ‘global scope’, so all variables must be defined within
-braces.
-
-See ~sequence.txt~ for a demonstration of sequential execution and
-variable scoping.
+functions. The program ~sequence.txt~ demonstrates scoping.
 
 * Selection & Iteration
 Selection (~if~) is performed by evaluating an expression, then
@@ -93,21 +114,23 @@ executing the corresponding ~Statement~. This statement may be a
 branch.  In an (~if~-~else~) structure, the alternative ~Statement~ is
 executed if the expression evaluates to false.
 
-Iteration is implemented with recursion.
+Iteration is implemented near-identically to selection, with the
+addition of recursion.
 
 See ~branching.txt~ for an example.
 
 * Functions and ~return~
-I wanted to implement functions as lambdas, which would be ~Expr~
-expressions. This would have unfortunately involved a dependency
-cycle, where Expressions could contain Statements, which could contain
-Expressions, making it unreasonably difficult to implement into my
-existing architecture.
+I wanted to implement functions as lambdas, which would themselves be
+~Expr~ expressions. I tried this and found a dependency cycle, where
+Expressions could contain Statements, which could contain Expressions,
+making it unreasonably difficult to implement into my existing
+architecture.
 
-Instead, I use the much more C-like form of the top level of a program
-file consisting of several function definitions, including ~main()~,
-which is used as the entry-point to start evaluation.
-I do this by evaluating an expression to call the ~main()~ function.
+Instead, I used the much more C-like form of the top level of a
+program file consisting of several function definitions, including
+~main()~, which is used as the entry-point to start evaluation.  I
+literally do this by evaluating an Expression to call the ~main()~
+function (see ~Main.hs~).
 
 Distressingly, the dependency cycle remained, and I had to use
 ~Eval.hs-boot~ to break it. If I'd known how to do this from the
@@ -119,14 +142,15 @@ references, each function (call) can have its own isolated symbol
 table for variables. These are stored in the familiar function call
 stack, which Haskell can implicitly create for me through recursion.
 
-Returning works by adding a value for the key “return” to the symbol
-table. Since ~pIdentifier~ prevents user-input assignments to this
-symbol from parsing, it will only be created once a ~return~ Statement
-has run.  The (function) interpreter may then simply evaluate the
-Statements in the body of a function in turn until the ~return~ symbol
-has a Value, then pass that Value out to the expression it was called
-in.  When a value is returned inside a {~Block~}, it is necessary to
-‘cascade’ it out to the symbol table below, as seen in ~Exec.hs~.
+Returning works by adding a value for the key “return” to the top
+level of the symbol table. Since ~pIdentifier~ prevents user-input
+assignments to this symbol from parsing, it will only be created once
+a ~return~ Statement has run.  The (function) interpreter may then
+simply evaluate the Statements in the body of a function in turn until
+the ~return~ symbol has a Value, then pass that Value out to the
+expression it was called in.  When a value is returned inside a
+{~Block~}, it is necessary to ‘cascade’ it out to the symbol table
+below before it goes out of scope, as seen in ~Exec.hs~.
 
 An interesting consequence of using ~Map.fromList~ to construct the
 table of functions is that duplicate definitions are not considered a
@@ -138,13 +162,15 @@ I struggled to implement the ~pArgs~ parser until I discovered
 
 #+latex: \pagebreak
 * Technology & Resources
-These are resources I may have used for this coursework.
+** Code
 - [[https://github.com/mrkkrp/megaparsec][Megaparsec]], a monadic parsing library.
 - [[https://markkarpov.com/tutorial/megaparsec.html][Megaparsec Tutorial]], by Mark Karpov.
-- [[https://www.itu.dk/people/sestoft/plc/][Programming Language Concepts]], by Peter Sestoft.
-- [[https://suif.stanford.edu/dragonbook/][Compilers: Principles, Techniques, and Tools]], by Aho et al.
-- [[https://craftinginterpreters.com/][Crafting Interpreters]], by Robert Nystrom.
 - [[http://learnyouahaskell.com/chapters][Learn You a Haskell for Great Good!]], by Miran Lipovača.
 - [[https://hoogle.haskell.org/][Hoogle]].
-- [[https://warwick.ac.uk/fac/sci/dcs/teaching/material/cs325/][CS325]] coursework grammar file.
-- Yorkshire Tea.
+- The [[https://warwick.ac.uk/fac/sci/dcs/teaching/material/cs325/][CS325]] coursework grammar file.
+** Report
+- Emacs Org Mode
+- ~\usepackage[margin=2cm]{geometry}~
+# - [[https://www.itu.dk/people/sestoft/plc/][Programming Language Concepts]], by Peter Sestoft.
+# - [[https://suif.stanford.edu/dragonbook/][Compilers: Principles, Techniques, and Tools]], by Aho et al.
+# - [[https://craftinginterpreters.com/][Crafting Interpreters]], by Robert Nystrom.
