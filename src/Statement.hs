@@ -12,6 +12,7 @@ import Types
     Parser,
     Statement (..),
     Value (Integer),
+    returnDefault
   )
 
 pAssign :: Parser Assignment
@@ -45,7 +46,7 @@ pReturn = do
   e <- optional pExpr
   semicolon
   case e of
-    Nothing -> pure $ Return (Value $ Integer 0) -- return; is treated as return 0;
+    Nothing -> pure $ Return (Value returnDefault) -- return; is treated as return 0;
     Just e' -> pure $ Return e'
 
 pStatement :: Parser Statement
