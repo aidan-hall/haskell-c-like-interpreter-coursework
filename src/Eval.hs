@@ -23,6 +23,30 @@ boolVal :: Bool -> Value
 boolVal False = Integer 0
 boolVal True = Integer 1
 
+binMathsOp :: (Int -> Int -> Int) -> (Float -> Float -> Float) -> Expr -> Expr -> StateT SymbolTable IO Value
+binMathsOp f g x y =
+  do
+    x' <- eval x
+    y' <- eval y
+    pure $ case (x', y') of
+      (Integer x'', Integer y'') -> Integer $ x'' `f` y''
+      (Float x'', Float y'') -> Float $ x'' `g` y''
+      (Integer x'', Float y'') -> Float $ fromIntegral x'' `g` y''
+      (Float x'', Integer y'') -> Float $ x'' `g` fromIntegral y''
+
+comparisonOp :: (Int -> Int -> Bool) -> (Float -> Float -> Bool) -> Expr -> Expr -> StateT SymbolTable IO Value
+comparisonOp f g x y =
+  do
+    x' <- eval x
+    y' <- eval y
+    pure $ case (x', y') of
+      (Integer x'', Integer y'') -> boolVal $ x'' `f` y''
+      (Float x'', Integer y'') -> boolVal $ x'' `g` fromIntegral y''
+      (Integer x'', Float y'') -> boolVal $ fromIntegral x'' `g` y''
+      (Float x'', Float y'') -> boolVal $ x'' `g` y''
+
+
+
 eval :: Expr -> StateT SymbolTable IO Value
 eval expression = do
   tbl <- get
@@ -53,97 +77,18 @@ eval expression = do
         pure $ case x' of
           Integer n -> Integer $ negate n
           Float n -> Float $ negate n
-    Sum x y ->
-      do
-        x' <- eval x
-        y' <- eval y
-        pure $ case (x', y') of
-          (Integer x'', Integer y'') -> Integer $ x'' + y''
-          (Float x'', Float y'') -> Float $ x'' + y''
-          (Integer x'', Float y'') -> Float $ fromIntegral x'' + y''
-          (Float x'', Integer y'') -> Float $ x'' + fromIntegral y''
-    Subtr x y ->
-      do
-        x' <- eval x
-        y' <- eval y
-        pure $ case (x', y') of
-          (Integer x'', Integer y'') -> Integer $ x'' - y''
-          (Float x'', Float y'') -> Float $ x'' - y''
-          (Integer x'', Float y'') -> Float $ fromIntegral x'' - y''
-          (Float x'', Integer y'') -> Float $ x'' - fromIntegral y''
-    Product x y ->
-      do
-        x' <- eval x
-        y' <- eval y
-        pure $ case (x', y') of
-          (Integer x'', Integer y'') -> Integer $ x'' * y''
-          (Float x'', Float y'') -> Float $ x'' * y''
-          (Integer x'', Float y'') -> Float $ fromIntegral x'' * y''
-          (Float x'', Integer y'') -> Float $ x'' * fromIntegral y''
-    Division x y ->
-      do
-        x' <- eval x
-        y' <- eval y
-        pure $ case (x', y') of
-          (Integer x'', Integer y'') -> Integer $ x'' `div` y''
-          (Float x'', Float y'') -> Float $ x'' / y''
-          (Integer x'', Float y'') -> Float $ fromIntegral x'' / y''
-          (Float x'', Integer y'') -> Float $ x'' / fromIntegral y''
-    Modulo x y ->
-      do
-        x' <- eval x
-        y' <- eval y
-        pure $ case (x', y') of
-          (Integer x'', Integer y'') -> Integer $ x'' `mod` y''
-          (_, _) -> error "Modulo must be between two integers."
+    Sum x y -> binMathsOp (+) (+) x y
+    Subtr x y -> binMathsOp (-) (-) x y
+    Product x y -> binMathsOp (*) (*) x y
+    Division x y -> binMathsOp div (/) x y
+    Modulo x y -> binMathsOp mod (error "Modulo must be between two integers.") x y
     Not x -> eval x >>= \x' -> pure $ boolVal (not . truth $ x')
     And x y -> eval x >>= \x' -> eval y >>= \y' -> pure $ boolVal $ truth x' && truth y'
     Or x y -> eval x >>= \x' -> eval y >>= \y' -> pure $ boolVal $ truth x' || truth y'
-    Equal x y ->
-      eval x >>= \x' ->
-        eval y >>= \y' ->
-          pure $ case (x', y') of
-            (Integer x'', Integer y'') -> boolVal $ x'' == y''
-            (Float x'', Integer y'') -> boolVal $ x'' == fromIntegral y''
-            (Integer x'', Float y'') -> boolVal $ fromIntegral x'' == y''
-            (Float x'', Float y'') -> boolVal $ x'' == y''
-    NotEqual x y ->
-      eval x >>= \x' ->
-        eval y >>= \y' ->
-          pure $ case (x', y') of
-            (Integer x'', Integer y'') -> boolVal $ x'' /= y''
-            (Float x'', Integer y'') -> boolVal $ x'' /= fromIntegral y''
-            (Integer x'', Float y'') -> boolVal $ fromIntegral x'' /= y''
-            (Float x'', Float y'') -> boolVal $ x'' /= y''
-    Greater x y ->
-      eval x >>= \x' ->
-        eval y >>= \y' ->
-          pure $ case (x', y') of
-            (Integer x'', Integer y'') -> boolVal $ x'' > y''
-            (Float x'', Integer y'') -> boolVal $ x'' > fromIntegral y''
-            (Integer x'', Float y'') -> boolVal $ fromIntegral x'' > y''
-            (Float x'', Float y'') -> boolVal $ x'' > y''
-    Less x y ->
-      eval x >>= \x' ->
-        eval y >>= \y' ->
-          pure $ case (x', y') of
-            (Integer x'', Integer y'') -> boolVal $ x'' < y''
-            (Float x'', Integer y'') -> boolVal $ x'' < fromIntegral y''
-            (Integer x'', Float y'') -> boolVal $ fromIntegral x'' < y''
-            (Float x'', Float y'') -> boolVal $ x'' < y''
-    GreaterEqual x y ->
-      eval x >>= \x' ->
-        eval y >>= \y' ->
-          pure $ case (x', y') of
-            (Integer x'', Integer y'') -> boolVal $ x'' >= y''
-            (Float x'', Integer y'') -> boolVal $ x'' >= fromIntegral y''
-            (Integer x'', Float y'') -> boolVal $ fromIntegral x'' >= y''
-            (Float x'', Float y'') -> boolVal $ x'' >= y''
-    LessEqual x y ->
-      eval x >>= \x' ->
-        eval y >>= \y' ->
-          pure $ case (x', y') of
-            (Integer x'', Integer y'') -> boolVal $ x'' <= y''
-            (Float x'', Integer y'') -> boolVal $ x'' <= fromIntegral y''
-            (Integer x'', Float y'') -> boolVal $ fromIntegral x'' <= y''
-            (Float x'', Float y'') -> boolVal $ x'' <= y''
+    Equal x y -> comparisonOp (==) (==) x y
+    NotEqual x y -> comparisonOp (/=) (/=) x y
+    Greater x y -> comparisonOp (>) (>) x y
+
+    Less x y -> comparisonOp (<) (<) x y
+    GreaterEqual x y -> comparisonOp (>=) (>=) x y
+    LessEqual x y -> comparisonOp (<=) (<=) x y
