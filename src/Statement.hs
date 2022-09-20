@@ -45,9 +45,9 @@ pReturn = do
   void $ symbol "return"
   e <- optional pExpr
   semicolon
-  case e of
-    Nothing -> pure $ Return (Value returnDefault) -- return; is treated as return 0;
-    Just e' -> pure $ Return e'
+  (pure . Return) $ case e of
+    Nothing -> (Value returnDefault) -- return; is treated as return 0;
+    Just e' -> e'
 
 pStatement :: Parser Statement
 pStatement =
