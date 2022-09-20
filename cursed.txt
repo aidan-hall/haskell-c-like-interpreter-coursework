@@ -1,0 +1,11 @@
+foo() {
+  x = 3;
+  return x;
+}
+
+main() {
+  x = 5;
+  x;
+  foo();
+  x;
+}
