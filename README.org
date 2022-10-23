@@ -36,29 +36,18 @@ instances of this have been noted.
 I have occasionally capitalised nouns corresponding to data types.
 E.g. This evaluates an Expression.
 * Files
-+--------------+----------------------------------------------------------------------------------+
-|File          |Description                                                                       |
-+--------------+----------------------------------------------------------------------------------+
-|Types.hs      |Most of the type declarations for the project.                                    |
-+--------------+----------------------------------------------------------------------------------+
-|SymbolTable.hs|The symbol table data type, and functions to query and update it.                 |
-+--------------+----------------------------------------------------------------------------------+
-|Lex.hs        |Basic lexicographical parser functions, mostly copied from Mark Karpov's tutorial.|
-+--------------+----------------------------------------------------------------------------------+
-|Statement.hs  |Parsers for code statements.                                                      |
-+--------------+----------------------------------------------------------------------------------+
-|Function.hs   |The pFunction parser for functions.                                               |
-+--------------+----------------------------------------------------------------------------------+
-|Expr.hs       |Parsers for expressions (mathematical and Boolean).  (A function call is also an  |
-|              |expression.)                                                                      |
-+--------------+----------------------------------------------------------------------------------+
-|Eval.hs and   |Functions for evaluating the AST of an expression. Most notably eval.             |
-|Eval.hs-boot  |                                                                                  | 
-+--------------+----------------------------------------------------------------------------------+
-|Exec.hs       |Functions for executing Statements and lists thereof.                             |
-+--------------+----------------------------------------------------------------------------------+
-|Main.hs       |Where the function table is loaded and main() is called.                          |
-+--------------+----------------------------------------------------------------------------------+
+| File           | Description                                                                                   |
+|----------------+-----------------------------------------------------------------------------------------------|
+| Types.hs       | Most of the type declarations for the project.                                                |
+| SymbolTable.hs | The symbol table data type, and functions to query and update it.                             |
+| Lex.hs         | Basic lexicographical parser functions, mostly copied from Mark Karpov's tutorial.            |
+| Statement.hs   | Parsers for code statements.                                                                  |
+| Function.hs    | The pFunction parser for functions.                                                           |
+| Expr.hs        | Parsers for expressions (mathematical and Boolean).  (A function call is also an expression.) |
+| Eval.hs        | Functions for evaluating the AST of an expression. Most notably eval.                         |
+| Eval.hs-boot   | A work-around for a build dependency cycle.                                                   |
+| Exec.hs        | Functions for executing Statements and lists thereof.                                         |
+| Main.hs        | Where the function table is loaded and main() is called.                                      |
 * Maths and Boolean Expressions
 I first created a mathematical expression parser and evaluator.
 Even it appeared to technically meet the requirements for 40%.
